@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(USER)
+
+  teamId String?
+  team   Team?   @relation("TeamUsers", fields: [teamId], references: [id])
+
+  managedTeams Team[] @relation("TeamManager")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id   String @id @default(uuid())
+  name String @unique
+
+  users User[] @relation("TeamUsers")
+
+  managerId String?
+  manager   User?   @relation("TeamManager", fields: [managerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
